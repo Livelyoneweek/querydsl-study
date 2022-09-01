@@ -4,6 +4,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.entitiy.Hello;
 import study.querydsl.entitiy.QHello;
@@ -13,6 +14,7 @@ import javax.persistence.PersistenceContext;
 
 @SpringBootTest
 @Transactional
+//@Commit 데이터 실제 커밋, 어차피 create 모드라 재 실행 시 데이터 초기화됌
 class QuerydslApplicationTests {
 
     @PersistenceContext

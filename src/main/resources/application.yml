@@ -11,7 +11,7 @@ spring:
       ddl-auto: create
     properties:
       hibernate:
-        #        show_sql: true
+#        show_sql: true , 밑에 디버그랑 중복됨으로 이건 주석처리함
         format_sql: true
   #        dialect: org.hibernate.dialect.Oracle10gDialect
   #        default_batch_fetch_size: 100
@@ -26,4 +26,4 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
-#    org.hibernate.type: trace
+#    org.hibernate.type: trace 쿼리 ? 값을 볼 수 있음 근데 좀 불편하게 나옴
