@@ -43,6 +43,7 @@ public class QuerydslBasicTest {
         em.persist(member4);
     }
 
+
     @Test
     public void startJPQL() {
         //member1을 찾아라.
