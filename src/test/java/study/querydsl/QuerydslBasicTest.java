@@ -13,7 +13,9 @@ import study.querydsl.entitiy.QTeam;
 import study.querydsl.entitiy.Team;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
 
 import java.util.List;
 
@@ -27,6 +29,8 @@ public class QuerydslBasicTest {
 
     @PersistenceContext //@Autowired 도 사용가능
     EntityManager em;
+
+
 
     JPAQueryFactory queryFactory;
 
@@ -305,6 +309,39 @@ public class QuerydslBasicTest {
             System.out.println("t=" + tuple);
         }
     }
+
+    //조인-페치 조인
+    @PersistenceUnit
+    EntityManagerFactory emf;
+    
+    //페치조인 안할떄
+    @Test
+    public void fetchJoinNo() throws Exception {
+        em.flush();
+        em.clear();
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1"))
+                .fetchOne();
+        //emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());는 초기화 됬는지 안됬는지 알려주는 메소드
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("페치 조인 미적용").isFalse();
+    }
+
+    //페치조인 할때
+    @Test
+    public void fetchJoinUse() throws Exception {
+        em.flush();
+        em.clear();
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .join(member.team, team).fetchJoin() //조인이든, 레프트조인이든 뒤에 페치조인만 붙여주면 된다
+                .where(member.username.eq("member1"))
+                .fetchOne();
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
+        assertThat(loaded).as("페치 조인 적용").isTrue();
+    }
+
 
 }
 
