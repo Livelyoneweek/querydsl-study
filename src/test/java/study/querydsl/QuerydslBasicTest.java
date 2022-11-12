@@ -1,16 +1,23 @@
 package study.querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.QMemberDto;
+import study.querydsl.dto.UserDto;
 import study.querydsl.entitiy.Member;
 import study.querydsl.entitiy.QMember;
 import study.querydsl.entitiy.QTeam;
@@ -506,10 +513,139 @@ public class QuerydslBasicTest {
         for (String s : result) {
             System.out.println("s = " + s);
         }
-
-
     }
     
+    
+
+    @Test
+    public void simpleProjection() {
+        //프로젝션 대상이 하나
+        //프로젝션은 select 대상 지정
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .fetch();
+    }
+
+    @Test
+    public void tupleProjection() {
+        List<Tuple> result = queryFactory
+                .select(member.username, member.age)
+                .from(member)
+                .fetch();
+        for (Tuple tuple : result) {
+            String username = tuple.get(member.username);
+            Integer age = tuple.get(member.age);
+            System.out.println("username=" + username);
+            System.out.println("age=" + age);
+        }
+    }
+
+    @Test
+    public void findDtoByJPQL() {
+        List<MemberDto> result = em.createQuery(
+                        "select new study.querydsl.dto.MemberDto(m.username, m.age) " +
+                                "from Member m", MemberDto.class)
+                .getResultList();
+    }
+
+    @Test
+    public void findDtoBySetter() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.bean(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+    }
+
+    @Test
+    public void findDtoByField() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.fields(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+    }
+
+    //별칭이 다를 때
+    @Test
+    public void findUserDto() {
+        QMember memberSub = new QMember("memberSub");
+        List<UserDto> result = queryFactory
+                .select(Projections.fields(UserDto.class,
+                        member.username.as("name"),
+                        ExpressionUtils.as(JPAExpressions
+                                .select(memberSub.age.max())
+                                .from(memberSub), "age"))
+                ).from(member)
+                .fetch();
+
+        for (UserDto userDto : result) {
+            System.out.println("userDto = " + userDto);
+        }
+    }
+
+    @Test
+    public void findDtoByConstructor() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.constructor(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+    }
+
+    //findDtoByConstructor 와 다르게 생성자에 잘못넣게되면 컴파일 오류로 잡을 수 있음
+    //Dto가 순수하지 않게됌
+    @Test
+    public void findDtoByQueryProjection() {
+        List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("memberDto = " + memberDto);
+        }
+    }
+
+    //중복제거 distinct
+    @Test
+    public void findDtoUseDistinct() {
+        List<String> result = queryFactory
+                .select(member.username).distinct()
+                .from(member)
+                .fetch();
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    //조건에 null이 오면 검색을 제외시킴 (동적쿼리)
+    @Test
+    public void 동적쿼리_BooleanBuilder() throws Exception {
+        String usernameParam = "member1";
+        Integer ageParam = 10;
+        List<Member> result = searchMember1(usernameParam, ageParam);
+        Assertions.assertThat(result.size()).isEqualTo(1);
+    }
+    //둘다 null이면 where문에 조건이 안들어가고, null이 하나면 그 조건 제외시킴
+    private List<Member> searchMember1(String usernameCond, Integer ageCond) {
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (usernameCond != null) {
+            builder.and(member.username.eq(usernameCond));
+        }
+        if (ageCond != null) {
+            builder.and(member.age.eq(ageCond));
+        }
+        return queryFactory
+                .selectFrom(member)
+                .where(builder)
+                .fetch();
+    }
 
 }
 
