@@ -8,7 +8,6 @@ import study.querydsl.dto.MemberSearchCondition;
 import study.querydsl.dto.MemberTeamDto;
 import study.querydsl.dto.QMemberTeamDto;
 import study.querydsl.entitiy.Member;
-import study.querydsl.entitiy.QMember;
 
 import javax.persistence.EntityManager;
 import java.util.List;
