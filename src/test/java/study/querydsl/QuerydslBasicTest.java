@@ -338,6 +338,7 @@ public class QuerydslBasicTest {
         //emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());는 초기화 됬는지 안됬는지 알려주는 메소드
         boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
         assertThat(loaded).as("페치 조인 미적용").isFalse();
+        assertThat(loaded).isFalse();
     }
 
     //페치조인 할때
@@ -352,6 +353,8 @@ public class QuerydslBasicTest {
                 .fetchOne();
         boolean loaded = emf.getPersistenceUnitUtil().isLoaded(findMember.getTeam());
         assertThat(loaded).as("페치 조인 적용").isTrue();
+
+        System.out.println("findMember =" + findMember);
     }
 
     /**
@@ -426,9 +429,9 @@ public class QuerydslBasicTest {
                 ).from(member)
                 .fetch();
         for (Tuple tuple : fetch) {
+            System.out.println(tuple);
             System.out.println("username = " + tuple.get(member.username));
-            System.out.println("age = " +
-                    tuple.get(JPAExpressions.select(memberSub.age.avg()).from(memberSub)));
+            System.out.println("age = " + tuple.get(JPAExpressions.select(memberSub.age.avg()).from(memberSub)));
         }
     }
 
@@ -707,7 +710,6 @@ public class QuerydslBasicTest {
          set age = age + 1
          */
     }
-
     @Test
     public void bulkDelete() {
         long count = queryFactory
@@ -739,8 +741,6 @@ public class QuerydslBasicTest {
             System.out.println("s = " + s);
         }
     }
-
-
 
 }
 
