@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import study.querydsl.dto.MemberSearchCondition;
 import study.querydsl.dto.MemberTeamDto;
 import study.querydsl.dto.QMemberTeamDto;
@@ -19,7 +20,7 @@ import static study.querydsl.entitiy.QTeam.team;
 
 
 //MemberRepositoryImpl는 이름 맞춰야함 +Impl로
-
+//extends QuerydslRepositorySupport 는  코드 안침, 참고만 할것!!!!!!!!!!!!
 public class MemberRepositoryImpl implements MemberRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
